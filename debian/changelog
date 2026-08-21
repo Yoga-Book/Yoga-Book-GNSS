@@ -1,0 +1,14 @@
+yogabook-gnss (1.0.1) unstable; urgency=medium
+
+  * Separate indoor transport health from outdoor SKY and fix acceptance.
+  * Treat an intentional systemd stop as a clean vendor-service shutdown.
+
+ -- Yoga Book contributors <noreply@github.com>  Fri, 21 Aug 2026 07:37:25 +0200
+
+yogabook-gnss (1.0.0) unstable; urgency=medium
+
+  * Initial YB1-X91L BCM4752 GNSS integration.
+  * Add safe user-supplied stock-runtime builder and importer.
+  * Add rfkill power sequencing, isolated vendor runtime and gpsd bridge.
+
+ -- Yoga Book contributors <noreply@github.com>  Fri, 21 Aug 2026 07:00:00 +0200

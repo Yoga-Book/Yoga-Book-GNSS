@@ -1,0 +1,25 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: yogabook-gnss
+Source: https://github.com/Yoga-Book/Yoga-Book-GNSS
+Files-Excluded:
+ system/vendor/bin/gpsd
+ system/bin/linker64
+ system/lib64/*
+ system/vendor/etc/gps.*
+Comment:
+ Lenovo Android firmware, the Broadcom GNSS daemon, Bionic runtime and their
+ configuration are not part of this source or binary package. The import tool
+ operates only on files supplied separately by the device owner.
+
+Files: *
+Copyright: 2026 Yoga Book contributors
+License: GPL-2+
+
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ .
+ On Debian systems, the complete text of version 2 is available in
+ /usr/share/common-licenses/GPL-2.

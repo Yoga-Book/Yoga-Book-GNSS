@@ -1,0 +1,18 @@
+Source: yogabook-gnss
+Section: utils
+Priority: optional
+Maintainer: Yoga Book contributors <noreply@github.com>
+Build-Depends: debhelper-compat (= 13), python3
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Homepage: https://github.com/Yoga-Book/Yoga-Book-GNSS
+
+Package: yogabook-gnss
+Architecture: all
+Depends: ${misc:Depends}, apparmor, bash, coreutils, gpsd, gpsd-clients, python3, rfkill, systemd, util-linux
+Description: Lenovo Yoga Book YB1-X91L GNSS integration
+ Provides the open-source systemd, gpsd, rfkill, UART and import integration
+ needed to use the Yoga Book's BCM4752 GNSS receiver on Linux.
+ .
+ The package deliberately contains no Lenovo, Broadcom or Android binary.
+ The owner must import the compatible runtime from their own stock firmware.

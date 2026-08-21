@@ -1,0 +1,24 @@
+[Unit]
+Description=Lenovo Yoga Book BCM4752 GNSS transport
+Documentation=man:yogabook-gnss-health(8)
+ConditionPathExists=/var/lib/yogabook-gnss/root/system/vendor/bin/gpsd
+Requires=dev-ttyS5.device
+After=dev-ttyS5.device systemd-rfkill.service
+Before=gpsd.service
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart=/usr/libexec/yogabook-gnss-run
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=20
+TimeoutStopSec=15
+PrivateMounts=yes
+PrivateNetwork=yes
+ProtectHome=yes
+MemoryMax=128M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

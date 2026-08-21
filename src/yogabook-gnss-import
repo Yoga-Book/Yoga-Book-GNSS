@@ -1,0 +1,69 @@
+#!/usr/bin/python3
+# SPDX-License-Identifier: GPL-2.0-or-later
+"""Import a user-supplied Yoga Book stock GNSS runtime archive."""
+
+from argparse import ArgumentParser
+from pathlib import Path
+import os
+import subprocess
+import sys
+
+from yogabook_gnss_runtime import RuntimeError, import_runtime, validate_dmi
+
+
+def main() -> int:
+    parser = ArgumentParser(
+        description="Import Lenovo YB1-X91L Android GNSS blobs without redistributing them"
+    )
+    parser.add_argument("runtime_archive", type=Path)
+    parser.add_argument(
+        "--target",
+        type=Path,
+        default=Path("/var/lib/yogabook-gnss/root"),
+        help="runtime root (default: %(default)s)",
+    )
+    args = parser.parse_args()
+
+    if os.geteuid() != 0:
+        parser.error("must run as root")
+
+    managed_target = args.target == Path("/var/lib/yogabook-gnss/root")
+    had_runtime = (args.target / "system/vendor/bin/gpsd").is_file()
+    try:
+        validate_dmi()
+    except (OSError, RuntimeError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+
+    if managed_target:
+        subprocess.run(["systemctl", "stop", "gpsd.service"], check=False)
+        subprocess.run(["systemctl", "stop", "yogabook-gnss.service"], check=False)
+
+    try:
+        provenance = import_runtime(args.runtime_archive, args.target)
+    except (OSError, RuntimeError) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        if managed_target and had_runtime:
+            subprocess.run(
+                ["systemctl", "start", "yogabook-gnss.service"], check=False
+            )
+        return 1
+
+    print(f"Imported runtime to {args.target}")
+    print(f"Archive SHA256: {provenance['archive_sha256']}")
+    print(f"gpsd SHA256: {provenance['gpsd_sha256']}")
+
+    if managed_target:
+        subprocess.run(["systemctl", "daemon-reload"], check=True)
+        subprocess.run(
+            ["systemctl", "enable", "--now", "yogabook-gnss.service"],
+            check=True,
+        )
+        subprocess.run(["systemctl", "restart", "gpsd.socket"], check=True)
+        subprocess.run(["systemctl", "try-restart", "gpsd.service"], check=True)
+        print("Enabled yogabook-gnss.service and refreshed gpsd")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

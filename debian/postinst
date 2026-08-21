@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = configure ]; then
+	local_profile=/etc/apparmor.d/local/usr.sbin.gpsd
+	local_include='#include <local/yogabook-gnss-gpsd>'
+	touch "$local_profile"
+	if ! grep -Fqx "$local_include" "$local_profile"; then
+		printf '\n%s\n' "$local_include" >>"$local_profile"
+	fi
+	if command -v apparmor_parser >/dev/null 2>&1; then
+		apparmor_parser -r /etc/apparmor.d/usr.sbin.gpsd || true
+	fi
+	udevadm control --reload-rules || true
+	udevadm trigger --subsystem-match=tty --sysname-match=ttyS5 || true
+	if [ -x /var/lib/yogabook-gnss/root/system/vendor/bin/gpsd ]; then
+		systemctl enable yogabook-gnss.service || true
+		systemctl restart yogabook-gnss.service || true
+		systemctl restart gpsd.socket || true
+		systemctl try-restart gpsd.service || true
+	fi
+fi
+
+#DEBHELPER#
+
+exit 0

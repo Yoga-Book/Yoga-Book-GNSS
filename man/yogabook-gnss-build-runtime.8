@@ -1,0 +1,13 @@
+.TH YOGABOOK-GNSS-BUILD-RUNTIME 8 "August 2026" "yogabook-gnss 1.0.0"
+.SH NAME
+yogabook-gnss-build-runtime \- build a private Yoga Book GNSS runtime
+.SH SYNOPSIS
+.B yogabook-gnss-build-runtime
+.I STOCK_SYSTEM_ROOT OUTPUT.tar
+.SH DESCRIPTION
+Copies the exact dependency closure needed by the validated BCM4752 daemon
+from a user-owned, mounted Lenovo Android system image.  It validates the
+known daemon checksum and creates a deterministic private archive.  No vendor
+file is supplied by the yogabook-gnss package.
+.SH SEE ALSO
+.BR yogabook-gnss-import (8)

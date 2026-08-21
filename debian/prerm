@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = remove ]; then
+	systemctl disable --now yogabook-gnss.service || true
+	rfkill block gps || true
+	local_profile=/etc/apparmor.d/local/usr.sbin.gpsd
+	local_include='#include <local/yogabook-gnss-gpsd>'
+	if [ -f "$local_profile" ]; then
+		temporary=$(mktemp "${local_profile}.XXXXXX")
+		grep -Fvx "$local_include" "$local_profile" >"$temporary" || true
+		chmod --reference="$local_profile" "$temporary"
+		chown --reference="$local_profile" "$temporary"
+		mv -f "$temporary" "$local_profile"
+	fi
+	if command -v apparmor_parser >/dev/null 2>&1; then
+		apparmor_parser -r /etc/apparmor.d/usr.sbin.gpsd || true
+	fi
+fi
+
+#DEBHELPER#
+
+exit 0

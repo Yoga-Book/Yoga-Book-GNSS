@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+set -Eeuo pipefail
+
+runtime_root=/var/lib/yogabook-gnss/root
+gpsd_binary=$runtime_root/system/vendor/bin/gpsd
+gpsd_config=$runtime_root/system/vendor/etc/gps.xml
+lock_file=/run/yogabook-gnss.lock
+child_pid=
+mounted=()
+stopping=false
+
+fail() {
+	echo "ERROR: $*" >&2
+	exit 1
+}
+
+[[ $(< /sys/class/dmi/id/sys_vendor) == LENOVO ]] || fail "unsupported system vendor"
+[[ $(< /sys/class/dmi/id/product_name) == "Lenovo YB1-X91L" ]] || fail "unsupported product"
+[[ -x $gpsd_binary ]] || fail "runtime not imported; run yogabook-gnss-import"
+[[ -r $gpsd_config ]] || fail "missing stock gps.xml"
+[[ -c /dev/ttyS5 ]] || fail "GNSS UART /dev/ttyS5 is missing"
+[[ -c /dev/rfkill ]] || fail "/dev/rfkill is missing"
+
+exec 9>"$lock_file"
+flock -n 9 || fail "another Yoga Book GNSS instance is running"
+
+stop_child() {
+	if [[ -n $child_pid ]] && kill -0 "$child_pid" 2>/dev/null; then
+		kill -TERM "$child_pid" 2>/dev/null || true
+	fi
+}
+
+stop_service() {
+	stopping=true
+	stop_child
+}
+
+cleanup() {
+	local index target
+	stop_child
+	if [[ -n $child_pid ]]; then
+		wait "$child_pid" 2>/dev/null || true
+	fi
+	for ((index=${#mounted[@]} - 1; index >= 0; index--)); do
+		target=${mounted[index]}
+		if [[ $target == "$runtime_root/sys" ]]; then
+			umount -R "$target" 2>/dev/null || true
+		else
+			umount "$target" 2>/dev/null || true
+		fi
+	done
+	rfkill block gps 2>/dev/null || true
+}
+trap cleanup EXIT
+trap stop_service TERM INT
+
+bind_file() {
+	local source=$1 target=$2
+	[[ -e $target ]] || install -m 0600 /dev/null "$target"
+	mount --bind "$source" "$target"
+	mounted+=("$target")
+}
+
+for target in \
+	"$runtime_root/proc" \
+	"$runtime_root/sys" \
+	"$runtime_root/dev/gps/ttyGPS" \
+	"$runtime_root/dev/rfkill" \
+	"$runtime_root/dev/null" \
+	"$runtime_root/dev/random" \
+	"$runtime_root/dev/urandom"; do
+	mountpoint -q "$target" && fail "stale mount at $target"
+done
+
+bind_file /dev/ttyS5 "$runtime_root/dev/gps/ttyGPS"
+bind_file /dev/rfkill "$runtime_root/dev/rfkill"
+bind_file /dev/null "$runtime_root/dev/null"
+bind_file /dev/random "$runtime_root/dev/random"
+bind_file /dev/urandom "$runtime_root/dev/urandom"
+mount -t proc proc "$runtime_root/proc"
+mounted+=("$runtime_root/proc")
+mount --rbind /sys "$runtime_root/sys"
+mount --make-rslave "$runtime_root/sys"
+mounted+=("$runtime_root/sys")
+
+rm -f -- "$runtime_root/data/gps/nmeapipe"
+rfkill block gps
+sleep 0.5
+
+ANDROID_ROOT=/system \
+ANDROID_DATA=/data \
+ANDROID_STORAGE=/storage \
+EXTERNAL_STORAGE=/sdcard \
+LD_LIBRARY_PATH=/system/vendor/lib64:/system/lib64 \
+	chroot "$runtime_root" /system/vendor/bin/gpsd \
+		/system/vendor/etc/gps.xml Periodic &
+child_pid=$!
+
+for _ in $(seq 1 150); do
+	if [[ -p $runtime_root/data/gps/nmeapipe ]]; then
+		systemd-notify --ready --status="BCM4752 initialized; NMEA pipe ready"
+		break
+	fi
+	kill -0 "$child_pid" 2>/dev/null || break
+	sleep 0.1
+done
+[[ -p $runtime_root/data/gps/nmeapipe ]] || fail "vendor daemon did not create its NMEA pipe"
+
+set +e
+wait "$child_pid"
+status=$?
+set -e
+child_pid=
+if $stopping && ((status == 128 + 15 || status == 128 + 2)); then
+	exit 0
+fi
+exit "$status"

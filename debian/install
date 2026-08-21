@@ -1,0 +1,9 @@
+src/yogabook-gnss-build-runtime usr/sbin
+src/yogabook-gnss-health usr/sbin
+src/yogabook-gnss-import usr/sbin
+src/yogabook-gnss-run usr/libexec
+src/yogabook_gnss_runtime.py usr/lib/python3/dist-packages
+apparmor/yogabook-gnss-gpsd etc/apparmor.d/local
+systemd/gpsd-yogabook.conf usr/lib/systemd/system/gpsd.service.d
+systemd/yogabook-gnss.service usr/lib/systemd/system
+udev/60-yogabook-gnss.rules usr/lib/udev/rules.d

@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+set -Eeuo pipefail
+
+runtime_root=/var/lib/yogabook-gnss/root
+nmea_pipe=$runtime_root/data/gps/nmeapipe
+json_stream=$(mktemp /tmp/yogabook-gnss-health-json.XXXXXX)
+raw_stream=$(mktemp /tmp/yogabook-gnss-health-nmea.XXXXXX)
+require_sky=false
+require_fix=false
+trap 'rm -f -- "$json_stream" "$raw_stream"' EXIT
+
+usage() {
+	cat <<'EOF'
+Usage: yogabook-gnss-health [--require-sky] [--require-fix]
+
+By default, verify GNSS transport even when an indoor receiver cannot report
+complete satellite geometry.  --require-sky requires gpsd SKY data;
+--require-fix additionally requires a 2D or 3D position fix.
+EOF
+}
+
+while (($#)); do
+	case $1 in
+	--require-sky)
+		require_sky=true
+		;;
+	--require-fix)
+		require_sky=true
+		require_fix=true
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*)
+		usage >&2
+		exit 2
+		;;
+	esac
+	shift
+done
+
+fail() {
+	echo "HEALTH_RESULT: FAIL - $*" >&2
+	exit 1
+}
+
+[[ $(< /sys/class/dmi/id/sys_vendor) == LENOVO ]] || fail "wrong system vendor"
+[[ $(< /sys/class/dmi/id/product_name) == "Lenovo YB1-X91L" ]] || fail "wrong product"
+systemctl is-active --quiet yogabook-gnss.service || fail "yogabook-gnss.service is not active"
+systemctl is-active --quiet gpsd.socket || fail "gpsd.socket is not active"
+[[ -p $nmea_pipe ]] || fail "NMEA pipe is missing"
+rfkill list gps | grep -q 'Soft blocked: no' || fail "GPS is soft blocked"
+
+capture_stream() {
+	local mode=$1 output=$2 status
+
+	set +e
+	timeout 15 gpspipe "$mode" >"$output"
+	status=$?
+	set -e
+	((status == 0 || status == 124))
+}
+
+# Capture JSON and raw NMEA concurrently for a fixed interval.  Immediately
+# after a cold receiver start, record-count limits can be exhausted by vendor
+# status messages before the first complete GSV cycle arrives.
+capture_stream -w "$json_stream" &
+json_capture_pid=$!
+capture_stream -r "$raw_stream" &
+raw_capture_pid=$!
+wait "$json_capture_pid" || fail "gpsd JSON stream failed"
+wait "$raw_capture_pid" || fail "gpsd raw stream failed"
+
+grep -q '"class":"TPV"' "$json_stream" || fail "gpsd did not provide TPV data"
+
+# gpsd intentionally suppresses SKY when GSV satellites have no azimuth or
+# elevation, which is normal indoors.  Verify the receiver's raw GGA, RMC and
+# GSV transport separately so the default health result does not claim that a
+# working receiver is broken merely because complete sky geometry is absent.
+grep -Eq '^\$..GGA,' "$raw_stream" || fail "receiver did not provide GGA data"
+grep -Eq '^\$..RMC,' "$raw_stream" || fail "receiver did not provide RMC data"
+grep -Eq '^\$..GSV,' "$raw_stream" || fail "receiver did not provide GSV data"
+
+sky_status="raw GSV present; complete gpsd SKY geometry unavailable"
+if grep -q '"class":"SKY"' "$json_stream"; then
+	sky_status="gpsd SKY present"
+elif $require_sky; then
+	fail "complete gpsd SKY data is unavailable; retry outdoors"
+fi
+
+fix_status="no 2D/3D fix"
+if grep -Eq '"class":"TPV".*"mode":[23]([,}])' "$json_stream"; then
+	fix_status="2D/3D fix present"
+elif $require_fix; then
+	fail "2D/3D geographic fix is unavailable; retry outdoors"
+fi
+
+echo "HEALTH_RESULT: PASS"
+echo "TRANSPORT_RESULT: PASS"
+echo "Vendor service: active"
+echo "gpsd socket: active"
+echo "GPS rfkill: unblocked"
+echo "gpsd TPV stream: present"
+echo "NMEA GGA/RMC/GSV stream: present"
+echo "SKY status: $sky_status"
+echo "Fix status: $fix_status"

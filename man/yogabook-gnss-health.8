@@ -1,0 +1,25 @@
+.TH YOGABOOK-GNSS-HEALTH 8 "August 2026" "yogabook-gnss 1.0.1"
+.SH NAME
+yogabook-gnss-health \- verify Yoga Book GNSS transport
+.SH SYNOPSIS
+.B yogabook-gnss-health
+.RB [ --require-sky ]
+.RB [ --require-fix ]
+.SH DESCRIPTION
+Checks the YB1-X91L DMI identity, vendor transport service, GPS rfkill state,
+NMEA FIFO, gpsd socket, a bounded gpsd TPV stream and raw GGA/RMC/GSV data.
+The default result proves transport, not complete sky geometry or an outdoor
+satellite fix.  gpsd intentionally suppresses SKY output when indoor GSV data
+lacks satellite azimuth or elevation.
+.PP
+.B --require-sky
+also requires complete gpsd SKY data.
+.B --require-fix
+implies
+.B --require-sky
+and additionally requires a TPV mode 2 or 3 geographic fix.  Use these strict
+checks outdoors with a clear view of the sky.
+.SH SEE ALSO
+.BR gpsd (8),
+.BR gpspipe (1),
+.BR yogabook-gnss-import (8)

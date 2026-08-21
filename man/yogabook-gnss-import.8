@@ -1,0 +1,14 @@
+.TH YOGABOOK-GNSS-IMPORT 8 "August 2026" "yogabook-gnss 1.0.0"
+.SH NAME
+yogabook-gnss-import \- import a private Yoga Book GNSS runtime
+.SH SYNOPSIS
+.B yogabook-gnss-import
+.I RUNTIME.tar
+.SH DESCRIPTION
+Validates and imports a user-supplied YB1-X91L Android GNSS runtime, applies
+the Linux UART, rfkill and RF-plan settings, and enables the GNSS service.
+The importer rejects unknown daemon versions, archive path traversal, links,
+devices and unexpected files.
+.SH SEE ALSO
+.BR yogabook-gnss-build-runtime (8),
+.BR yogabook-gnss-health (8)

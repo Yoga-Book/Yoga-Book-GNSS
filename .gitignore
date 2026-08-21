@@ -1,0 +1,21 @@
+*.buildinfo
+*.changes
+*.deb
+*.dsc
+*.img
+*.tar
+*.tar.*
+*.upload
+__pycache__/
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/yogabook-gnss.substvars
+debian/yogabook-gnss/
+
+# Never stage imported proprietary Android/Broadcom runtime content.
+runtime-provenance.json
+system/bin/
+system/lib64/
+system/vendor/bin/gpsd
+system/vendor/etc/gps.*

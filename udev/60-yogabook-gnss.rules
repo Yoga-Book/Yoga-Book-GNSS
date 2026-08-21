@@ -1,0 +1,2 @@
+# Lenovo Yoga Book YB1-X91L: UART1 is dedicated to the BCM4752 GNSS receiver.
+SUBSYSTEM=="tty", KERNEL=="ttyS5", KERNELS=="8086228A:01", ENV{ID_MM_DEVICE_IGNORE}="1", GROUP="dialout", MODE="0660"
