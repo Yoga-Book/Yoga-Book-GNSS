@@ -66,6 +66,14 @@ ms, and lets the daemon issue the actual rfkill unblock. The receiver runs at
 921600 baud with a 26 MHz, 2 ppm frequency plan and the external-LNA BCM4752 RF
 profile. It is powered off when the service stops.
 
+The stock transport consumes about 2-3% of one CPU continuously while GNSS is
+enabled. The service therefore has conservative CPU, memory, task and restart
+limits, and a low CPU scheduling weight so desktop audio and input remain
+responsive under contention. It remains enabled continuously because stopping
+the proprietary initialization transport when Linux `gpsd` has no clients
+cannot yet be made transparently socket-activated without risking location
+availability.
+
 SUPL and HTTP LTO are disabled because the standalone Linux integration has no
 Android RIL/network callbacks. Satellite-only positioning remains available.
 

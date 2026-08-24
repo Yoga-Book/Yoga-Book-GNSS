@@ -17,6 +17,12 @@ python3 -m py_compile \
 
 grep -Fq 'PrivateMounts=yes' "$root/systemd/yogabook-gnss.service"
 grep -Fq 'PrivateNetwork=yes' "$root/systemd/yogabook-gnss.service"
+grep -Fq 'CPUWeight=10' "$root/systemd/yogabook-gnss.service"
+grep -Fq 'CPUQuota=50%' "$root/systemd/yogabook-gnss.service"
+grep -Fq 'MemoryHigh=64M' "$root/systemd/yogabook-gnss.service"
+grep -Fq 'MemoryMax=128M' "$root/systemd/yogabook-gnss.service"
+grep -Fq 'TasksMax=32' "$root/systemd/yogabook-gnss.service"
+grep -Fq 'StartLimitBurst=3' "$root/systemd/yogabook-gnss.service"
 grep -Fq 'KERNELS=="8086228A:01"' "$root/udev/60-yogabook-gnss.rules"
 grep -Fq 'ENV{ID_MM_DEVICE_IGNORE}="1"' "$root/udev/60-yogabook-gnss.rules"
 grep -Fq '/var/lib/yogabook-gnss/root/data/gps/nmeapipe rw,' \
