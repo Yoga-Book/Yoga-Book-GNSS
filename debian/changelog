@@ -1,3 +1,9 @@
+yogabook-gnss (1.0.3) unstable; urgency=medium
+
+  * Allow a complete GSV cycle during receiver cold-start health checks.
+
+ -- Yoga Book contributors <noreply@github.com>  Fri, 28 Aug 2026 20:40:00 +0200
+
 yogabook-gnss (1.0.2) unstable; urgency=medium
 
   * Bound vendor transport CPU, memory, task count and restart rate.

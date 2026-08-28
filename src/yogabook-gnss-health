@@ -58,7 +58,7 @@ capture_stream() {
 	local mode=$1 output=$2 status
 
 	set +e
-	timeout 15 gpspipe "$mode" >"$output"
+	timeout 30 gpspipe "$mode" >"$output"
 	status=$?
 	set -e
 	((status == 0 || status == 124))

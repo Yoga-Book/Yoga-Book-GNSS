@@ -38,7 +38,7 @@ grep -Fq 'status == 128 + 15' "$root/src/yogabook-gnss-run"
 grep -Fq -- '--require-sky' "$root/src/yogabook-gnss-health"
 grep -Fq -- '--require-fix' "$root/src/yogabook-gnss-health"
 grep -Fq 'NMEA GGA/RMC/GSV stream: present' "$root/src/yogabook-gnss-health"
-grep -Fq 'timeout 15 gpspipe' "$root/src/yogabook-gnss-health"
+grep -Fq 'timeout 30 gpspipe' "$root/src/yogabook-gnss-health"
 
 if rg -n --hidden --glob '!tests/test-shell.sh' \
 	'd135fc515dd3802dcd9fe807b942e1e112767f56b5a44463c64121317753c715' \

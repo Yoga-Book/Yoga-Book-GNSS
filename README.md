@@ -35,7 +35,7 @@ refuses unsafe or unexpected archive members.
 ```bash
 make test
 make deb
-sudo apt install ../yogabook-gnss_1.0.2_all.deb
+sudo apt install ../yogabook-gnss_1.0.3_all.deb
 ```
 
 Mount your own extracted stock `system.img`, then build a private runtime. If
