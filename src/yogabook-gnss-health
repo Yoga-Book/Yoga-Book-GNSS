@@ -5,8 +5,9 @@ set -Eeuo pipefail
 
 runtime_root=/var/lib/yogabook-gnss/root
 nmea_pipe=$runtime_root/data/gps/nmeapipe
-json_stream=$(mktemp /tmp/yogabook-gnss-health-json.XXXXXX)
-raw_stream=$(mktemp /tmp/yogabook-gnss-health-nmea.XXXXXX)
+temporary_root=${TMPDIR:-/tmp}
+json_stream=$(mktemp "$temporary_root/yogabook-gnss-health-json.XXXXXX")
+raw_stream=$(mktemp "$temporary_root/yogabook-gnss-health-nmea.XXXXXX")
 require_sky=false
 require_fix=false
 trap 'rm -f -- "$json_stream" "$raw_stream"' EXIT

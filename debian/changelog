@@ -1,3 +1,10 @@
+yogabook-gnss (1.0.4) unstable; urgency=medium
+
+  * Use Debian systemd helpers from maintainer scripts.
+  * Drop redundant dependencies on Essential packages.
+
+ -- Yoga Book contributors <noreply@github.com>  Mon, 31 Aug 2026 23:40:00 +0200
+
 yogabook-gnss (1.0.3) unstable; urgency=medium
 
   * Allow a complete GSV cycle during receiver cold-start health checks.

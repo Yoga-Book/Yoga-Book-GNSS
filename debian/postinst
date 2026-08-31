@@ -13,11 +13,11 @@ if [ "$1" = configure ]; then
 	fi
 	udevadm control --reload-rules || true
 	udevadm trigger --subsystem-match=tty --sysname-match=ttyS5 || true
-	if [ -x /var/lib/yogabook-gnss/root/system/vendor/bin/gpsd ]; then
-		systemctl enable yogabook-gnss.service || true
-		systemctl restart yogabook-gnss.service || true
-		systemctl restart gpsd.socket || true
-		systemctl try-restart gpsd.service || true
+	if [ -x /var/lib/yogabook-gnss/root/system/vendor/bin/gpsd ] && \
+		command -v deb-systemd-invoke >/dev/null 2>&1; then
+		deb-systemd-invoke restart yogabook-gnss.service || true
+		deb-systemd-invoke restart gpsd.socket || true
+		deb-systemd-invoke try-restart gpsd.service || true
 	fi
 fi
 

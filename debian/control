@@ -9,7 +9,7 @@ Homepage: https://github.com/Yoga-Book/Yoga-Book-GNSS
 
 Package: yogabook-gnss
 Architecture: all
-Depends: ${misc:Depends}, apparmor, bash, coreutils, gpsd, gpsd-clients, python3, rfkill, systemd, util-linux
+Depends: ${misc:Depends}, apparmor, gpsd, gpsd-clients, python3, rfkill, systemd
 Description: Lenovo Yoga Book YB1-X91L GNSS integration
  Provides the open-source systemd, gpsd, rfkill, UART and import integration
  needed to use the Yoga Book's BCM4752 GNSS receiver on Linux.

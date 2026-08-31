@@ -4,7 +4,8 @@
 set -Eeuo pipefail
 
 package=${1:?usage: test-deb.sh PACKAGE.deb}
-temporary=$(mktemp -d /tmp/yogabook-gnss-deb.XXXXXX)
+temporary_root=${TMPDIR:-/tmp}
+temporary=$(mktemp -d "$temporary_root/yogabook-gnss-deb.XXXXXX")
 trap 'rm -rf -- "$temporary"' EXIT
 
 dpkg-deb -x "$package" "$temporary/root"

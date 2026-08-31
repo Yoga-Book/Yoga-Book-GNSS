@@ -2,7 +2,9 @@
 set -e
 
 if [ "$1" = remove ]; then
-	systemctl disable --now yogabook-gnss.service || true
+	if command -v deb-systemd-invoke >/dev/null 2>&1; then
+		deb-systemd-invoke stop yogabook-gnss.service || true
+	fi
 	rfkill block gps || true
 	local_profile=/etc/apparmor.d/local/usr.sbin.gpsd
 	local_include='#include <local/yogabook-gnss-gpsd>'
