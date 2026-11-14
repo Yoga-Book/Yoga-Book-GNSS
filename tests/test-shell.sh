@@ -39,6 +39,15 @@ grep -Fq -- '--require-sky' "$root/src/yogabook-gnss-health"
 grep -Fq -- '--require-fix' "$root/src/yogabook-gnss-health"
 grep -Fq 'NMEA GGA/RMC/GSV stream: present' "$root/src/yogabook-gnss-health"
 grep -Fq 'timeout 30 gpspipe' "$root/src/yogabook-gnss-health"
+test -x "$root/src/yogabook-gnss-nmea-bridge"
+grep -Fq 'nmea.sock' "$root/src/yogabook-gnss-nmea-bridge"
+grep -Fq 'network-nmea' "$root/geoclue/90-yogabook-nmea.conf"
+grep -Fq 'nmea-socket=/run/yogabook-gnss/nmea.sock' \
+	"$root/geoclue/90-yogabook-nmea.conf"
+grep -Fq 'yogabook-gnss-nmea-bridge' "$root/debian/install"
+grep -Fq 'yogabook-gnss-nmea-bridge.service' "$root/debian/postinst"
+grep -Fq 'WantedBy=multi-user.target' \
+	"$root/systemd/yogabook-gnss-nmea-bridge.service"
 
 if rg -n --hidden --glob '!tests/test-shell.sh' \
 	'd135fc515dd3802dcd9fe807b942e1e112767f56b5a44463c64121317753c715' \

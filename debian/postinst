@@ -13,6 +13,14 @@ if [ "$1" = configure ]; then
 	fi
 	udevadm control --reload-rules || true
 	udevadm trigger --subsystem-match=tty --sysname-match=ttyS5 || true
+	if dpkg-query -W -f='${Status}' geoclue-2.0 2>/dev/null | \
+		grep -q 'install ok installed' && \
+		command -v deb-systemd-helper >/dev/null 2>&1; then
+		deb-systemd-helper enable \
+			'yogabook-gnss-nmea-bridge.service' >/dev/null || true
+		deb-systemd-invoke restart \
+			'yogabook-gnss-nmea-bridge.service' || true
+	fi
 	if [ -x /var/lib/yogabook-gnss/root/system/vendor/bin/gpsd ] && \
 		command -v deb-systemd-invoke >/dev/null 2>&1; then
 		deb-systemd-invoke restart yogabook-gnss.service || true

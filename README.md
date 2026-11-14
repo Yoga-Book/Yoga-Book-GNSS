@@ -77,6 +77,19 @@ availability.
 SUPL and HTTP LTO are disabled because the standalone Linux integration has no
 Android RIL/network callbacks. Satellite-only positioning remains available.
 
+## GeoClue integration
+
+GeoClue 2.x does not consume gpsd directly. Its `network-nmea` source reads
+NMEA from a Unix socket, so the package installs a small bridge that forwards
+GGA and RMC from gpsd to `/run/yogabook-gnss/nmea.sock`, plus a GeoClue drop-in
+pointing at that socket. The bridge service is enabled automatically when
+`geoclue-2.0` is installed.
+
+Clients must request exact accuracy (`RequestedAccuracyLevel=8`); otherwise
+GeoClue refuses to start the NMEA source. GNOME Maps and Chromium do. Firefox
+uses Mozilla network geolocation instead of GeoClue, so it cannot validate the
+receiver.
+
 ## Verification
 
 ```bash

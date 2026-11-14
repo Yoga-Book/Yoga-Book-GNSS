@@ -1,0 +1,17 @@
+[Unit]
+Description=Lenovo Yoga Book GNSS NMEA bridge for GeoClue
+Documentation=man:yogabook-gnss-health(8)
+ConditionPathExists=/var/lib/yogabook-gnss/root/system/vendor/bin/gpsd
+Requires=gpsd.socket
+After=gpsd.socket yogabook-gnss.service
+
+[Service]
+Type=simple
+ExecStart=/usr/libexec/yogabook-gnss-nmea-bridge
+Restart=on-failure
+RestartSec=2
+MemoryMax=16M
+TasksMax=8
+
+[Install]
+WantedBy=multi-user.target

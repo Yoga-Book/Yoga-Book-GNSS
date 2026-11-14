@@ -1,3 +1,10 @@
+yogabook-gnss (1.0.6) unstable; urgency=medium
+
+  * Add a GeoClue NMEA bridge and service.
+  * Install a GeoClue network-nmea drop-in when geoclue-2.0 is present.
+
+ -- Yoga Book contributors <noreply@github.com>  Sun, 15 Nov 2026 00:15:00 +0800
+
 yogabook-gnss (1.0.4) unstable; urgency=medium
 
   * Use Debian systemd helpers from maintainer scripts.
