@@ -122,15 +122,40 @@ class RuntimeImportTests(unittest.TestCase):
                 build_prop="ro.build.display.id=unsupported\n",
             )
             with self.assertRaisesRegex(
-                runtime.RuntimeError, "unsupported source build property"
+                runtime.RuntimeError, "unsupported source build identity"
             ):
                 runtime.import_runtime(archive, base / "root", expected)
+
+    def test_accepts_known_x90f_builds(self) -> None:
+        for identity in runtime.SUPPORTED_BUILD_PROPERTIES:
+            with tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                (root / "build.prop").write_text(
+                    "\n".join(
+                        f"{name}={value}" for name, value in identity.items()
+                    )
+                    + "\n"
+                )
+                self.assertEqual(
+                    runtime.validate_source_identity(root), identity
+                )
+
+    def test_reads_build_prop_from_mounted_image_root(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "build.prop").write_text(BUILD_PROP)
+            self.assertEqual(
+                runtime.validate_source_identity(root),
+                runtime.EXPECTED_BUILD_PROPERTIES,
+            )
 
     def test_dmi_scope(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             dmi = Path(temporary)
             (dmi / "sys_vendor").write_text("LENOVO\n")
             (dmi / "product_name").write_text("Lenovo YB1-X91L\n")
+            runtime.validate_dmi(dmi)
+            (dmi / "product_name").write_text("Lenovo YB1-X91F\n")
             runtime.validate_dmi(dmi)
             (dmi / "product_name").write_text("Different\n")
             with self.assertRaisesRegex(runtime.RuntimeError, "unsupported machine"):

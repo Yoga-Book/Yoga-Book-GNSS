@@ -1,7 +1,7 @@
 # Yoga Book GNSS
 
 Linux integration for the Broadcom BCM4752 GNSS receiver in the Lenovo Yoga
-Book YB1-X91L.
+Book YB1-X91 family (X91F and X91L).
 
 The Debian package supplies the open integration layer: safe firmware import,
 the required rfkill off-to-on sequence, an isolated Android/Bionic runtime,
@@ -19,16 +19,18 @@ patch protocol. That binary is proprietary and dynamically linked against the
 Android 7.1.1 Bionic runtime, so it cannot be shipped by this project or run as
 a normal glibc executable.
 
-The tested runtime is from Lenovo Android 7.1.1 build
-`YB1-X90F_USR_S100043_1709020000_WW08_BP_ROW`. Its BCM4752 transport has been
-physically validated on the YB1-X91L and has this daemon checksum:
+The tested runtimes are from Lenovo Android 7.1.1 builds
+`YB1-X90F_USR_S100043_1709020000_WW08_BP_ROW` and
+`YB1-X90F_USR_S110086_1710170829_WW08_EP_ROW`; both ship the same BCM4752
+transport daemon. The transport has been physically validated on the YB1-X91L
+and YB1-X91F and has this daemon checksum:
 
 ```text
 d135fc515dd3802dcd9fe807b942e1e112767f56b5a44463c64121317753c715
 ```
 
-The importer verifies that exact source-build identity and daemon checksum, and
-refuses unsafe or unexpected archive members.
+The builder verifies a known source-build identity and the importer enforces
+that exact daemon checksum, and refuses unsafe or unexpected archive members.
 
 ## Build and install
 
@@ -60,7 +62,8 @@ BCM4752 -> /dev/ttyS5 -> isolated stock daemon -> NMEA FIFO -> Linux gpsd
                                                             -> GeoClue/apps
 ```
 
-The service is DMI-scoped to `LENOVO` / `Lenovo YB1-X91L`, excludes the
+The service is DMI-scoped to `LENOVO` / `Lenovo YB1-X91*` (X91F and X91L),
+excludes the
 dedicated UART from ModemManager, powers GPS off before every start, waits 500
 ms, and lets the daemon issue the actual rfkill unblock. The receiver runs at
 921600 baud with a 26 MHz, 2 ppm frequency plan and the external-LNA BCM4752 RF
@@ -109,8 +112,9 @@ sudo rm -rf /var/lib/yogabook-gnss
 
 ## References
 
-- Lenovo Android 7.1.1 build `YB1-X90F_USR_S100043_1709020000_WW08_BP_ROW`
-- Lenovo Yoga Book YB1-X91L hardware used for transport validation
+- Lenovo Android 7.1.1 builds `YB1-X90F_USR_S100043_1709020000_WW08_BP_ROW`
+  and `YB1-X90F_USR_S110086_1710170829_WW08_EP_ROW`
+- Lenovo Yoga Book YB1-X91L and YB1-X91F hardware used for transport validation
 - [gpsd](https://gpsd.io/)
 - Linux rfkill and DesignWare APB UART interfaces
 

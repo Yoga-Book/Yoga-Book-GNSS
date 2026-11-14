@@ -49,7 +49,7 @@ fail() {
 }
 
 [[ $(< /sys/class/dmi/id/sys_vendor) == LENOVO ]] || fail "wrong system vendor"
-[[ $(< /sys/class/dmi/id/product_name) == "Lenovo YB1-X91L" ]] || fail "wrong product"
+[[ $(< /sys/class/dmi/id/product_name) == "Lenovo YB1-X91"* ]] || fail "wrong product"
 systemctl is-active --quiet yogabook-gnss.service || fail "yogabook-gnss.service is not active"
 systemctl is-active --quiet gpsd.socket || fail "gpsd.socket is not active"
 [[ -p $nmea_pipe ]] || fail "NMEA pipe is missing"

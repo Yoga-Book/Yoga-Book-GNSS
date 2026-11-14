@@ -28,6 +28,20 @@ EXPECTED_BUILD_PROPERTIES = {
     ),
 }
 
+# Both X90F builds ship the same BCM4752 transport daemon; keep the known
+# identities explicit instead of accepting arbitrary X90F images.
+SUPPORTED_BUILD_PROPERTIES = (
+    EXPECTED_BUILD_PROPERTIES,
+    {
+        "ro.build.display.id": "YB1-X90F_USR_S110086_1710170829_WW08_EP_ROW",
+        "ro.product.model": "Lenovo YB1-X90F",
+        "ro.build.fingerprint": (
+            "Lenovo/yeti_10_row_wifi/yeti:7.1.1/NMF26X/"
+            "LenovoYB1-X90F_S110086_171017:user/release-keys"
+        ),
+    },
+)
+
 RUNTIME_FILES = (
     "system/bin/linker64",
     "system/build.prop",
@@ -80,7 +94,11 @@ def sha256_file(path: Path) -> str:
 
 
 def validate_source_identity(root: Path) -> dict[str, str]:
-    build_prop = root / "system/build.prop"
+    # The builder passes a mounted system image, where build.prop sits at the
+    # root. The importer passes an extracted archive root with a system/ tree.
+    build_prop = root / "build.prop"
+    if not build_prop.is_file():
+        build_prop = root / "system/build.prop"
     properties: dict[str, str] = {}
 
     try:
@@ -97,15 +115,22 @@ def validate_source_identity(root: Path) -> dict[str, str]:
             raise RuntimeError(f"duplicate source build property: {name}")
         properties[name] = value
 
-    for name, expected in EXPECTED_BUILD_PROPERTIES.items():
-        actual = properties.get(name)
-        if actual != expected:
-            raise RuntimeError(
-                f"unsupported source build property {name}: "
-                f"expected {expected!r}, got {actual!r}"
-            )
+    for identity in SUPPORTED_BUILD_PROPERTIES:
+        if all(properties.get(name) == expected
+               for name, expected in identity.items()):
+            return {name: properties[name] for name in identity}
 
-    return {name: properties[name] for name in EXPECTED_BUILD_PROPERTIES}
+    actual = {
+        name: properties.get(name) for name in EXPECTED_BUILD_PROPERTIES
+    }
+    supported = ", ".join(
+        identity["ro.build.display.id"]
+        for identity in SUPPORTED_BUILD_PROPERTIES
+    )
+    raise RuntimeError(
+        f"unsupported source build identity {actual!r}; "
+        f"supported builds: {supported}"
+    )
 
 
 def validate_dmi(dmi_root: Path = Path("/sys/class/dmi/id")) -> None:
@@ -115,7 +140,7 @@ def validate_dmi(dmi_root: Path = Path("/sys/class/dmi/id")) -> None:
     except OSError as error:
         raise RuntimeError(f"cannot read DMI identity: {error}") from error
 
-    if vendor != "LENOVO" or product != "Lenovo YB1-X91L":
+    if vendor != "LENOVO" or not product.startswith("Lenovo YB1-X91"):
         raise RuntimeError(
             f"unsupported machine: vendor={vendor!r}, product={product!r}"
         )

@@ -17,7 +17,7 @@ fail() {
 }
 
 [[ $(< /sys/class/dmi/id/sys_vendor) == LENOVO ]] || fail "unsupported system vendor"
-[[ $(< /sys/class/dmi/id/product_name) == "Lenovo YB1-X91L" ]] || fail "unsupported product"
+[[ $(< /sys/class/dmi/id/product_name) == "Lenovo YB1-X91"* ]] || fail "unsupported product"
 [[ -x $gpsd_binary ]] || fail "runtime not imported; run yogabook-gnss-import"
 [[ -r $gpsd_config ]] || fail "missing stock gps.xml"
 [[ -c /dev/ttyS5 ]] || fail "GNSS UART /dev/ttyS5 is missing"

@@ -1,3 +1,12 @@
+yogabook-gnss (1.0.5) unstable; urgency=medium
+
+  * Support the Lenovo YB1-X91F in addition to the YB1-X91L.
+  * Accept the X90F S110086 stock build, whose gpsd matches the existing
+    daemon checksum.
+  * Read build.prop from the mounted system-image root.
+
+ -- Yoga Book contributors <noreply@github.com>  Sat, 14 Nov 2026 23:50:00 +0800
+
 yogabook-gnss (1.0.4) unstable; urgency=medium
 
   * Use Debian systemd helpers from maintainer scripts.
